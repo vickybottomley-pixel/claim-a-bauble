@@ -1,0 +1,1287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Claim a Bauble! - Festive Interactive Game</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts: Festive Display & Clean UI -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&family=Fredoka:wght@600;700&family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@700;800;900&display=swap" rel="stylesheet">
+  
+  <style>
+    :root {
+      --crimson-dark: #4a0810;
+      --crimson-rich: #7a101d;
+      --gold-light: #fde08d;
+      --gold-mid: #d4af37;
+      --gold-dark: #8a6614;
+      --wood-dark: #2c180c;
+      --wood-mid: #4a2a16;
+    }
+
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Inter', sans-serif;
+      background: radial-gradient(circle at 20% 30%, #7c111e 0%, #4d0710 55%, #2d0308 100%);
+      color: #fff;
+      min-height: 100vh;
+      overflow-x: hidden;
+      user-select: none;
+    }
+
+    /* Velvet Side Texture Effect */
+    .velvet-bg {
+      background-image: 
+        radial-gradient(circle at 15% 50%, rgba(255, 190, 190, 0.08) 0%, transparent 45%),
+        radial-gradient(circle at 85% 20%, rgba(20, 83, 45, 0.25) 0%, transparent 45%),
+        repeating-linear-gradient(45deg, rgba(0,0,0,0.06) 0px, rgba(0,0,0,0.06) 2px, transparent 2px, transparent 4px);
+    }
+
+    /* Central Warm Christmas Hearth & Tree Scene */
+    .hearth-scene {
+      position: relative;
+      background: 
+        /* Warm fireplace & tree bokeh glow */
+        radial-gradient(circle at 18% 28%, rgba(255, 224, 130, 0.42) 0%, rgba(255, 180, 60, 0.15) 28%, transparent 55%),
+        radial-gradient(circle at 78% 48%, rgba(255, 236, 179, 0.45) 0%, rgba(245, 158, 11, 0.18) 30%, transparent 60%),
+        radial-gradient(circle at 50% 40%, #3d2817 0%, #23160c 65%, #160d07 100%);
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.75), inset 0 0 80px rgba(0, 0, 0, 0.65);
+    }
+
+    /* Bokeh Lights Layer */
+    .bokeh-dot {
+      position: absolute;
+      border-radius: 50%;
+      pointer-events: none;
+      filter: blur(5px);
+      animation: pulseGlow 4s ease-in-out infinite alternate;
+    }
+
+    @keyframes pulseGlow {
+      0% { opacity: 0.45; transform: scale(0.95); }
+      100% { opacity: 0.95; transform: scale(1.08); }
+    }
+
+    /* Rustic Wooden Table at the Bottom */
+    .wooden-table {
+      background: 
+        linear-gradient(180deg, rgba(15, 8, 3, 0.65) 0%, rgba(45, 24, 11, 0.2) 15%, rgba(20, 10, 4, 0.75) 100%),
+        repeating-linear-gradient(90deg, 
+          #5c361d 0px, #6e4224 48px, #492914 50px, 
+          #683e21 52px, #543018 110px, #3e2210 112px,
+          #633a1f 114px, #59331a 175px, #442612 177px
+        );
+      border-top: 2px solid rgba(212, 175, 55, 0.25);
+      box-shadow: inset 0 12px 24px rgba(0,0,0,0.6);
+    }
+
+    /* Scalloped Claim a Bauble Badge */
+    .badge-title {
+      font-family: 'Fredoka', cursive, sans-serif;
+      letter-spacing: 0.02em;
+    }
+
+    /* Bauble Container & Gentle Sway Animation */
+    .bauble-slot {
+      transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    .bauble-slot:hover {
+      transform: translateY(-4px) scale(1.04);
+      z-index: 20;
+    }
+    .bauble-slot:active {
+      transform: scale(0.97);
+    }
+
+    @keyframes gentleSway {
+      0%, 100% { transform: rotate(-1.4deg); }
+      50% { transform: rotate(1.4deg); }
+    }
+    .bauble-sway {
+      transform-origin: top center;
+      animation: gentleSway 4.5s ease-in-out infinite;
+    }
+
+    /* Bauble Sphere Base */
+    .bauble-sphere {
+      position: relative;
+      border-radius: 50%;
+      box-shadow: 
+        inset -8px -10px 18px rgba(0, 0, 0, 0.55),
+        inset 6px 8px 14px rgba(255, 255, 255, 0.45),
+        0 10px 18px rgba(0, 0, 0, 0.55);
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Specular Gloss Highlight */
+    .bauble-sphere::after {
+      content: '';
+      position: absolute;
+      top: 10%;
+      left: 16%;
+      width: 30%;
+      height: 18%;
+      border-radius: 50%;
+      background: radial-gradient(ellipse at center, rgba(255,255,255,0.75) 0%, rgba(255,255,255,0) 75%);
+      transform: rotate(-28deg);
+      pointer-events: none;
+    }
+
+    /* Bauble Texture Styles matching the 25 baubles in reference image */
+    /* 1, 9: Glossy Crimson Red */
+    .tex-crimson {
+      background: radial-gradient(circle at 35% 30%, #e11d48 0%, #9f1239 55%, #4c0519 100%);
+    }
+    /* 2, 10, 18: Brushed Metallic Gold */
+    .tex-gold {
+      background: radial-gradient(circle at 35% 30%, #fef08a 0%, #eab308 45%, #a16207 82%, #713f12 100%);
+    }
+    /* 13: Glittery Gold */
+    .tex-gold-glitter {
+      background: 
+        radial-gradient(rgba(255,255,255,0.7) 1px, transparent 1px),
+        radial-gradient(rgba(254,240,138,0.8) 1px, transparent 1px),
+        radial-gradient(circle at 35% 30%, #fde047 0%, #ca8a04 55%, #713f12 100%);
+      background-size: 7px 7px, 11px 11px, 100% 100%;
+      background-position: 0 0, 4px 4px, 0 0;
+    }
+    /* 3, 14: Pearl White with Gold Snowflakes */
+    .tex-white-gold {
+      background: radial-gradient(circle at 35% 30%, #ffffff 0%, #f1f5f9 58%, #cbd5e1 100%);
+    }
+    /* 11: Glossy Pearl White */
+    .tex-white-pearl {
+      background: radial-gradient(circle at 32% 28%, #ffffff 0%, #e2e8f0 62%, #94a3b8 100%);
+    }
+    /* 21: White with Green Polka Dots */
+    .tex-white-dots {
+      background: 
+        radial-gradient(#15803d 2.5px, transparent 3px),
+        radial-gradient(#166534 2.5px, transparent 3px),
+        radial-gradient(circle at 35% 30%, #ffffff 0%, #e2e8f0 68%, #cbd5e1 100%);
+      background-size: 18px 18px, 18px 18px, 100% 100%;
+      background-position: 2px 3px, 11px 12px, 0 0;
+    }
+    /* 25: White with Botanical Wreath */
+    .tex-white-wreath {
+      background: radial-gradient(circle at 35% 30%, #ffffff 0%, #f8fafc 60%, #cbd5e1 100%);
+    }
+    /* 4, 12, 22: Glossy Emerald Green */
+    .tex-emerald {
+      background: radial-gradient(circle at 35% 30%, #22c55e 0%, #15803d 52%, #052e16 100%);
+    }
+    /* 24: Glittery Green */
+    .tex-green-glitter {
+      background: 
+        radial-gradient(rgba(255,255,255,0.65) 1px, transparent 1px),
+        radial-gradient(rgba(187,247,208,0.75) 1px, transparent 1px),
+        radial-gradient(circle at 35% 30%, #4ade80 0%, #166534 55%, #052e16 100%);
+      background-size: 6px 6px, 10px 10px, 100% 100%;
+      background-position: 0 0, 3px 5px, 0 0;
+    }
+    /* 7, 17: Green with Gold Stars */
+    .tex-green-stars {
+      background: radial-gradient(circle at 35% 30%, #16a34a 0%, #14532d 60%, #052e16 100%);
+    }
+    /* 5, 20: Green with Holly Leaves */
+    .tex-green-holly {
+      background: radial-gradient(circle at 35% 30%, #15803d 0%, #114b27 60%, #042411 100%);
+    }
+    /* 6, 16: Red with White Snowflakes */
+    .tex-red-snowflakes {
+      background: radial-gradient(circle at 35% 30%, #dc2626 0%, #991b1b 58%, #450a0a 100%);
+    }
+    /* 8, 23: Festive Tartan Plaid */
+    .tex-tartan {
+      background: 
+        repeating-linear-gradient(0deg, rgba(220, 38, 38, 0.55) 0px, rgba(220, 38, 38, 0.55) 8px, transparent 8px, transparent 16px, rgba(250, 204, 21, 0.45) 16px, rgba(250, 204, 21, 0.45) 18px, transparent 18px, transparent 22px),
+        repeating-linear-gradient(90deg, rgba(220, 38, 38, 0.55) 0px, rgba(220, 38, 38, 0.55) 8px, transparent 8px, transparent 16px, rgba(255, 255, 255, 0.4) 16px, rgba(255, 255, 255, 0.4) 18px, transparent 18px, transparent 22px),
+        radial-gradient(circle at 35% 30%, #166534 0%, #052e16 85%);
+    }
+    /* 15, 19: Sparkling Royal Blue */
+    .tex-royal-blue {
+      background: 
+        radial-gradient(rgba(255,255,255,0.7) 1px, transparent 1px),
+        radial-gradient(rgba(191,219,254,0.8) 1px, transparent 1px),
+        radial-gradient(circle at 35% 30%, #3b82f6 0%, #1d4ed8 52%, #172554 100%);
+      background-size: 8px 8px, 13px 13px, 100% 100%;
+      background-position: 1px 2px, 5px 7px, 0 0;
+    }
+
+    /* Bauble Number Typography */
+    .bauble-number {
+      font-family: 'Playfair Display', Georgia, serif;
+      font-weight: 900;
+      color: #fffdf7;
+      text-shadow: 
+        0 2px 3px rgba(0, 0, 0, 0.85),
+        0 0 2px rgba(138, 102, 20, 0.95),
+        1px 1px 0px #5c3a08,
+        -1px -1px 0px #5c3a08;
+      z-index: 5;
+      line-height: 1;
+    }
+
+    /* Wooden Nameplate Plaque */
+    .wood-plaque {
+      background: 
+        linear-gradient(180deg, rgba(255,255,255,0.08) 0%, rgba(0,0,0,0.25) 100%),
+        repeating-linear-gradient(3deg, #3d2211 0px, #4f2d17 4px, #331b0d 8px, #472814 12px);
+      border: 1.5px solid #d4af37;
+      box-shadow: 
+        0 3px 6px rgba(0,0,0,0.7),
+        inset 0 1px 1px rgba(255, 236, 179, 0.35);
+      font-family: 'Cinzel', serif;
+    }
+
+    /* Claimed Glow Ring */
+    .bauble-claimed .bauble-sphere {
+      box-shadow: 
+        inset -8px -10px 18px rgba(0, 0, 0, 0.55),
+        inset 6px 8px 14px rgba(255, 255, 255, 0.45),
+        0 0 14px rgba(253, 224, 141, 0.65),
+        0 10px 18px rgba(0, 0, 0, 0.6);
+    }
+
+    /* Revealed Prize Shimmer */
+    @keyframes prizePulse {
+      0%, 100% { box-shadow: 0 0 14px #fde047, 0 0 26px #f59e0b; }
+      50% { box-shadow: 0 0 22px #fef08a, 0 0 38px #fbbf24; }
+    }
+    .bauble-revealed .bauble-sphere {
+      animation: prizePulse 2.2s infinite ease-in-out;
+      border: 2px solid #fef08a;
+    }
+
+    /* Custom Scrollbar for Modals */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: rgba(0,0,0,0.2);
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #b48a28;
+      border-radius: 4px;
+    }
+  </style>
+</head>
+<body class="velvet-bg flex flex-col items-center justify-center min-h-screen p-1 sm:p-3 md:p-4">
+
+  <!-- Confetti Canvas Overlay -->
+  <canvas id="confettiCanvas" class="fixed inset-0 pointer-events-none z-50"></canvas>
+
+  <!-- Main Responsive Layout Container -->
+  <div class="w-full max-w-6xl mx-auto flex flex-col lg:flex-row items-center lg:items-start justify-center gap-3 lg:gap-6 relative">
+    
+    <!-- Left Sidebar: Scalloped 'CLAIM A BAUBLE!' Plaque & Live Status -->
+    <aside class="w-full lg:w-64 flex flex-row lg:flex-col items-center justify-between lg:justify-start gap-3 lg:pt-8 px-2 z-20 shrink-0">
+      
+      <!-- Scalloped Decorative Badge (Matches Reference Image Top-Left) -->
+      <div class="relative w-44 sm:w-52 lg:w-56 drop-shadow-[0_12px_20px_rgba(0,0,0,0.65)] transition-transform hover:scale-105 duration-300">
+        <svg viewBox="0 0 260 230" class="w-full h-auto overflow-visible">
+          <defs>
+            <radialGradient id="plaqueCream" cx="50%" cy="45%" r="55%">
+              <stop offset="0%" stop-color="#fffdf8"/>
+              <stop offset="75%" stop-color="#f7efe1"/>
+              <stop offset="100%" stop-color="#e5d5bc"/>
+            </radialGradient>
+            <filter id="innerShadow">
+              <feDropShadow dx="0" dy="2" stdDeviation="2" flood-color="#5c3a18" flood-opacity="0.25"/>
+            </filter>
+          </defs>
+          <!-- Scalloped Vintage Frame Path -->
+          <path d="M130,10 C152,10 165,24 188,24 C212,24 226,42 226,65 C226,88 242,100 242,115 C242,130 226,142 226,165 C226,188 212,206 188,206 C165,206 152,220 130,220 C108,220 95,206 72,206 C48,206 34,188 34,165 C34,142 18,130 18,115 C18,100 34,88 34,65 C34,42 48,24 72,24 C95,24 108,10 130,10 Z" 
+                fill="url(#plaqueCream)" stroke="#d6c2a3" stroke-width="3" filter="url(#innerShadow)"/>
+          <!-- Inner Gold/Red Dashed Border -->
+          <path d="M130,19 C149,19 161,32 183,32 C204,32 217,48 217,69 C217,90 231,101 231,115 C231,129 217,140 217,161 C217,182 204,198 183,198 C161,198 149,211 130,211 C111,211 99,198 77,198 C56,198 43,182 43,161 C43,140 29,129 29,115 C29,101 43,90 43,69 C43,48 56,32 77,32 C99,32 111,19 130,19 Z" 
+                fill="none" stroke="#c59b38" stroke-width="1.5" stroke-dasharray="4,3"/>
+
+          <!-- Small Gold Stars -->
+          <text x="64" y="49" fill="#d97706" font-size="11">✦</text>
+          <text x="190" y="52" fill="#d97706" font-size="11">✦</text>
+          <text x="48" y="138" fill="#d97706" font-size="10">✦</text>
+          <text x="206" y="138" fill="#d97706" font-size="10">✦</text>
+
+          <!-- Hand-Lettered 'CLAIM' -->
+          <text x="130" y="78" text-anchor="middle" fill="#b91c1c" font-family="'Fredoka', sans-serif" font-weight="700" font-size="38" letter-spacing="1.5">CLAIM</text>
+
+          <!-- Swirls & 'A' & Mini Ornament -->
+          <path d="M72,98 Q86,91 98,98" fill="none" stroke="#15803d" stroke-width="2.5" stroke-linecap="round"/>
+          <text x="122" y="106" text-anchor="middle" fill="#15803d" font-family="'Fredoka', sans-serif" font-weight="700" font-size="25">A</text>
+          <path d="M142,98 Q154,91 166,98" fill="none" stroke="#15803d" stroke-width="2.5" stroke-linecap="round"/>
+          
+          <!-- Mini Striped Ornament on Right of 'A' -->
+          <g transform="translate(184, 96)">
+            <rect x="-3" y="-13" width="6" height="4" fill="#d97706" rx="1"/>
+            <circle cx="0" cy="0" r="10" fill="#dc2626" stroke="#991b1b" stroke-width="1"/>
+            <path d="M-9,-2 Q0,3 9,-2" fill="none" stroke="#facc15" stroke-width="2"/>
+            <path d="M-8,4 Q0,8 8,4" fill="none" stroke="#16a34a" stroke-width="2"/>
+          </g>
+
+          <!-- Hand-Lettered 'BAUBLE!' -->
+          <text x="130" y="146" text-anchor="middle" fill="#b91c1c" font-family="'Fredoka', sans-serif" font-weight="700" font-size="37" letter-spacing="1">BAUBLE!</text>
+
+          <!-- Holly Leaves & Red Berries at Bottom -->
+          <g transform="translate(130, 176)">
+            <!-- Left Holly Leaf -->
+            <path d="M-4,0 C-18,-10 -34,-6 -42,4 C-32,6 -26,12 -18,12 C-12,12 -7,6 -4,0 Z" fill="#15803d" stroke="#052e16" stroke-width="1"/>
+            <!-- Right Holly Leaf -->
+            <path d="M4,0 C18,-10 34,-6 42,4 C32,6 26,12 18,12 C12,12 7,6 4,0 Z" fill="#166534" stroke="#052e16" stroke-width="1"/>
+            <!-- 3 Red Berries -->
+            <circle cx="-4" cy="3" r="4.5" fill="#dc2626" stroke="#7f1d1d" stroke-width="0.8"/>
+            <circle cx="4" cy="3" r="4.5" fill="#ef4444" stroke="#7f1d1d" stroke-width="0.8"/>
+            <circle cx="0" cy="-2" r="4.5" fill="#b91c1c" stroke="#7f1d1d" stroke-width="0.8"/>
+            <circle cx="-1" cy="-3.5" r="1.2" fill="#fecaca"/>
+          </g>
+        </svg>
+      </div>
+
+      <!-- Festive Status & Controls Card -->
+      <div class="flex-1 lg:w-full bg-black/45 backdrop-blur-md border border-amber-400/35 rounded-2xl p-3 sm:p-4 shadow-xl text-xs sm:text-sm">
+        <div class="flex items-center justify-between border-b border-amber-400/20 pb-2 mb-2.5">
+          <span class="font-semibold text-amber-200 flex items-center gap-1.5">
+            <span id="syncDot" class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
+            <span id="syncLabel">Live Board</span>
+          </span>
+          <span id="claimedCounter" class="bg-amber-500/20 text-amber-200 border border-amber-400/40 px-2 py-0.5 rounded-full font-bold text-xs">
+            0 / 25 Claimed
+          </span>
+        </div>
+
+        <p class="text-amber-100/85 text-xs leading-relaxed mb-3 hidden sm:block">
+          Click any unclaimed bauble to add your name! Prizes behind each bauble are revealed by the host at the end of the week.
+        </p>
+
+        <!-- Action Buttons -->
+        <div class="flex flex-wrap lg:flex-col gap-2">
+          <button onclick="openHostModal()" id="hostToggleBtn"
+            class="flex-1 lg:w-full py-2 px-3 rounded-xl font-semibold text-xs bg-gradient-to-r from-amber-600 to-yellow-600 hover:from-amber-500 hover:to-yellow-500 text-white shadow-md border border-amber-300/40 transition flex items-center justify-center gap-1.5 cursor-pointer">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+            <span id="hostBtnText">Host / Reveal Prizes</span>
+          </button>
+
+          <button onclick="openHelpModal()"
+            class="py-2 px-3 rounded-xl font-medium text-xs bg-white/10 hover:bg-white/20 text-amber-100 border border-white/15 transition flex items-center justify-center gap-1.5 cursor-pointer">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            <span>How to Play / Embed</span>
+          </button>
+        </div>
+
+        <!-- Host Quick Bar (Visible Only When Unlocked) -->
+        <div id="hostQuickPanel" class="hidden mt-3 pt-3 border-t border-amber-400/30 space-y-2">
+          <div class="flex items-center justify-between">
+            <span class="text-[11px] font-bold uppercase tracking-wider text-emerald-300">★ Host Mode Active</span>
+            <button onclick="lockHostMode()" class="text-[11px] text-amber-300 underline hover:text-white cursor-pointer">Lock</button>
+          </div>
+          <button onclick="openPrizeEditorModal()"
+            class="w-full py-1.5 px-2.5 rounded-lg bg-emerald-700/80 hover:bg-emerald-600 text-white text-xs font-semibold border border-emerald-400/40 transition cursor-pointer">
+            ✎ Edit All 25 Prizes
+          </button>
+          <div class="grid grid-cols-2 gap-1.5">
+            <button onclick="revealAllBaubles()"
+              class="py-1.5 px-2 rounded-lg bg-amber-600/80 hover:bg-amber-500 text-white text-[11px] font-semibold border border-amber-300/30 transition cursor-pointer">
+              Reveal All
+            </button>
+            <button onclick="confirmResetBoard()"
+              class="py-1.5 px-2 rounded-lg bg-rose-800/80 hover:bg-rose-700 text-white text-[11px] font-semibold border border-rose-400/30 transition cursor-pointer">
+              Reset Claims
+            </button>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Central 5x5 Bauble Board -->
+    <main class="w-full max-w-[660px] hearth-scene rounded-2xl sm:rounded-3xl border-2 border-amber-500/35 overflow-hidden relative">
+      
+      <!-- Warm Golden Bokeh Lights in Background -->
+      <div class="bokeh-dot w-14 h-14 bg-amber-300/40 top-[14%] left-[12%]" style="animation-delay: 0s;"></div>
+      <div class="bokeh-dot w-20 h-20 bg-yellow-200/30 top-[32%] left-[8%]" style="animation-delay: 1.1s;"></div>
+      <div class="bokeh-dot w-16 h-16 bg-amber-400/35 top-[55%] left-[18%]" style="animation-delay: 0.6s;"></div>
+      <div class="bokeh-dot w-24 h-24 bg-orange-200/25 top-[38%] right-[14%]" style="animation-delay: 1.8s;"></div>
+      <div class="bokeh-dot w-12 h-12 bg-yellow-300/40 top-[62%] right-[10%]" style="animation-delay: 0.4s;"></div>
+      <div class="bokeh-dot w-16 h-16 bg-amber-200/30 top-[20%] left-[44%]" style="animation-delay: 2.2s;"></div>
+
+      <!-- Decorative Pine & Holly Bough Top Right (Matching Reference Image) -->
+      <svg class="absolute -top-2 -right-2 w-44 sm:w-56 h-auto pointer-events-none z-10 opacity-90" viewBox="0 0 220 140">
+        <!-- Pine Needles -->
+        <g stroke="#14532d" stroke-width="2.5" stroke-linecap="round">
+          <line x1="220" y1="0" x2="120" y2="55"/>
+          <line x1="200" y1="12" x2="175" y2="48"/>
+          <line x1="185" y1="20" x2="155" y2="58"/>
+          <line x1="168" y1="30" x2="138" y2="68"/>
+          <line x1="150" y1="40" x2="115" y2="75"/>
+          <line x1="190" y1="15" x2="165" y2="-5"/>
+          <line x1="170" y1="26" x2="145" y2="4"/>
+          <line x1="150" y1="37" x2="122" y2="18"/>
+        </g>
+        <!-- Holly Leaves & Berries -->
+        <path d="M135,28 C118,18 102,22 95,34 C106,36 112,42 120,42 C126,42 132,35 135,28 Z" fill="#166534" stroke="#052e16" stroke-width="1"/>
+        <path d="M142,35 C135,50 142,66 154,70 C154,60 158,53 156,45 C154,39 148,36 142,35 Z" fill="#15803d" stroke="#052e16" stroke-width="1"/>
+        <circle cx="136" cy="33" r="5" fill="#dc2626"/>
+        <circle cx="143" cy="29" r="4.5" fill="#ef4444"/>
+        <circle cx="142" cy="37" r="4.5" fill="#b91c1c"/>
+      </svg>
+
+      <!-- 5x5 Grid of Hanging Baubles -->
+      <div id="baubleGrid" class="relative z-10 grid grid-cols-5 gap-x-1.5 sm:gap-x-3 md:gap-x-4 gap-y-2 sm:gap-y-3 px-2.5 sm:px-6 pt-0 pb-4 sm:pb-6">
+        <!-- Baubles 1 to 25 injected dynamically via JS -->
+      </div>
+
+      <!-- Rustic Wooden Tabletop Base (Bottom Row Rests Above/On Table) -->
+      <div class="wooden-table h-10 sm:h-14 w-full relative z-0 -mt-8 sm:-mt-11 pointer-events-none"></div>
+    </main>
+  </div>
+
+  <!-- MODAL 1: Claim a Bauble Modal -->
+  <div id="claimModal" class="fixed inset-0 bg-black/75 backdrop-blur-sm hidden items-center justify-center p-4 z-40">
+    <div class="bg-gradient-to-b from-[#3d0a11] to-[#230509] border-2 border-amber-400/70 rounded-2xl max-w-sm w-full p-5 sm:p-6 shadow-2xl relative text-center">
+      <button onclick="closeModal('claimModal')" class="absolute top-3 right-3 text-amber-200/70 hover:text-white p-1 cursor-pointer">✕</button>
+      
+      <div id="claimPreviewContainer" class="flex justify-center mb-3"></div>
+      
+      <h2 class="text-xl sm:text-2xl font-bold text-amber-200 font-serif mb-1">Claim Bauble #<span id="claimBaubleNum">1</span></h2>
+      <p class="text-xs sm:text-sm text-amber-100/80 mb-4">Enter your name below to put your tag on this bauble!</p>
+      
+      <form id="claimForm" onsubmit="submitClaim(event)" class="space-y-3 text-left">
+        <div>
+          <label class="block text-xs font-semibold text-amber-200 uppercase tracking-wider mb-1">Your Name *</label>
+          <input type="text" id="playerNameInput" required maxlength="22" placeholder="e.g. Sarah M."
+            class="w-full px-3.5 py-2.5 rounded-xl bg-black/50 border border-amber-400/40 text-white placeholder-amber-100/35 focus:outline-none focus:border-amber-300 text-sm">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-amber-200 uppercase tracking-wider mb-1">Team or Note (Optional)</label>
+          <input type="text" id="playerNoteInput" maxlength="35" placeholder="e.g. Marketing Team"
+            class="w-full px-3.5 py-2 rounded-xl bg-black/50 border border-amber-400/30 text-white placeholder-amber-100/35 focus:outline-none focus:border-amber-300 text-xs">
+        </div>
+        <div class="pt-2 flex gap-2">
+          <button type="button" onclick="closeModal('claimModal')"
+            class="flex-1 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-amber-100 text-sm font-medium transition cursor-pointer">
+            Cancel
+          </button>
+          <button type="submit"
+            class="flex-1 py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 to-green-700 hover:from-emerald-500 hover:to-green-600 text-white text-sm font-bold shadow-lg border border-emerald-300/40 transition cursor-pointer">
+            🎄 Claim Bauble
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL 2: Bauble Details / Prize Reveal Modal -->
+  <div id="detailModal" class="fixed inset-0 bg-black/75 backdrop-blur-sm hidden items-center justify-center p-4 z-40">
+    <div class="bg-gradient-to-b from-[#3d0a11] to-[#230509] border-2 border-amber-400/70 rounded-2xl max-w-sm w-full p-5 sm:p-6 shadow-2xl relative text-center">
+      <button onclick="closeModal('detailModal')" class="absolute top-3 right-3 text-amber-200/70 hover:text-white p-1 cursor-pointer">✕</button>
+      
+      <div id="detailPreviewContainer" class="flex justify-center mb-3"></div>
+      
+      <h2 class="text-xl sm:text-2xl font-bold text-amber-200 font-serif mb-1">Bauble #<span id="detailBaubleNum">1</span></h2>
+      
+      <div class="bg-black/40 border border-amber-400/30 rounded-xl p-3 my-3">
+        <div class="text-[11px] uppercase tracking-wider text-amber-300/80">Claimed By</div>
+        <div id="detailClaimantName" class="text-lg font-bold text-white mt-0.5">Unclaimed</div>
+        <div id="detailClaimantNote" class="text-xs text-amber-200/75 mt-0.5"></div>
+      </div>
+
+      <!-- Prize Display Box -->
+      <div id="prizeRevealBox" class="rounded-xl p-4 my-3 border transition-all">
+        <!-- Populated dynamically based on revealed status & host mode -->
+      </div>
+
+      <!-- Host Specific Controls for this single bauble -->
+      <div id="detailHostActions" class="hidden pt-2 border-t border-amber-400/25 space-y-2">
+        <div class="text-[11px] font-bold uppercase tracking-wider text-emerald-300">Host Controls</div>
+        <div class="flex gap-2">
+          <button id="toggleRevealSingleBtn" onclick="toggleRevealSingle()"
+            class="flex-1 py-2 px-3 rounded-xl bg-amber-600 hover:bg-amber-500 text-white text-xs font-bold transition cursor-pointer">
+            Reveal Prize
+          </button>
+          <button id="clearClaimSingleBtn" onclick="clearSingleClaim()"
+            class="py-2 px-3 rounded-xl bg-rose-800/90 hover:bg-rose-700 text-white text-xs font-semibold transition cursor-pointer">
+            Clear Claim
+          </button>
+        </div>
+      </div>
+
+      <button onclick="closeModal('detailModal')"
+        class="mt-3 w-full py-2 rounded-xl bg-white/10 hover:bg-white/20 text-amber-100 text-xs font-semibold transition cursor-pointer">
+        Close
+      </button>
+    </div>
+  </div>
+
+  <!-- MODAL 3: Host PIN Login Modal -->
+  <div id="hostLoginModal" class="fixed inset-0 bg-black/75 backdrop-blur-sm hidden items-center justify-center p-4 z-40">
+    <div class="bg-gradient-to-b from-[#2c180c] to-[#1a0d06] border-2 border-amber-400/70 rounded-2xl max-w-xs w-full p-5 shadow-2xl relative text-center">
+      <button onclick="closeModal('hostLoginModal')" class="absolute top-3 right-3 text-amber-200/70 hover:text-white p-1 cursor-pointer">✕</button>
+      <div class="text-3xl mb-2">🔑</div>
+      <h3 class="text-lg font-bold text-amber-200 font-serif">Host / Organizer Access</h3>
+      <p class="text-xs text-amber-100/75 mt-1 mb-3">Enter the Host PIN to set hidden prizes or reveal weekly winners.<br><span class="text-amber-300 font-semibold">(Default PIN: 1234)</span></p>
+      
+      <form onsubmit="verifyHostPin(event)" class="space-y-3">
+        <input type="password" id="hostPinInput" maxlength="10" placeholder="Enter PIN (1234)" required
+          class="w-full px-3 py-2 rounded-xl bg-black/60 border border-amber-400/40 text-center text-white tracking-widest font-bold focus:outline-none focus:border-amber-300">
+        <p id="pinErrorMsg" class="text-rose-400 text-xs hidden">Incorrect PIN. Try 1234.</p>
+        <button type="submit"
+          class="w-full py-2.5 rounded-xl bg-gradient-to-r from-amber-600 to-yellow-600 hover:from-amber-500 hover:to-yellow-500 text-white text-sm font-bold shadow-lg cursor-pointer">
+          Unlock Host Mode
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL 4: Bulk Edit All 25 Prizes Modal -->
+  <div id="prizeEditorModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm hidden items-center justify-center p-3 sm:p-4 z-40">
+    <div class="bg-gradient-to-b from-[#2c180c] to-[#1a0d06] border-2 border-amber-400/70 rounded-2xl max-w-2xl w-full max-h-[88vh] flex flex-col p-4 sm:p-6 shadow-2xl relative">
+      <div class="flex items-center justify-between border-b border-amber-400/30 pb-3 mb-3">
+        <div>
+          <h3 class="text-lg sm:text-xl font-bold text-amber-200 font-serif">Manage Prizes Behind Baubles</h3>
+          <p class="text-xs text-amber-100/75">Set what is hidden behind each bauble (1–25) and toggle weekly reveals.</p>
+        </div>
+        <button onclick="closeModal('prizeEditorModal')" class="text-amber-200/70 hover:text-white p-1.5 cursor-pointer">✕</button>
+      </div>
+
+      <!-- Quick Tools -->
+      <div class="flex flex-wrap items-center justify-between gap-2 mb-3 bg-black/35 p-2.5 rounded-xl border border-amber-400/20">
+        <button type="button" onclick="randomizeDefaultPrizes()"
+          class="py-1.5 px-3 rounded-lg bg-emerald-700 hover:bg-emerald-600 text-white text-xs font-semibold transition cursor-pointer">
+          🎲 Fill with Fun Festive Prizes
+        </button>
+        <div class="flex items-center gap-2 text-xs">
+          <span class="text-amber-200">Change Host PIN:</span>
+          <input type="text" id="newHostPinInput" maxlength="8" placeholder="1234"
+            class="w-20 px-2 py-1 rounded bg-black/50 border border-amber-400/40 text-white text-center text-xs">
+        </div>
+      </div>
+
+      <!-- Scrollable List of 25 Baubles -->
+      <div id="prizeEditorList" class="flex-1 overflow-y-auto space-y-2 pr-1">
+        <!-- Rows injected dynamically -->
+      </div>
+
+      <div class="pt-3 mt-3 border-t border-amber-400/30 flex justify-end gap-2">
+        <button type="button" onclick="closeModal('prizeEditorModal')"
+          class="py-2 px-4 rounded-xl bg-white/10 hover:bg-white/20 text-amber-100 text-xs font-semibold cursor-pointer">
+          Cancel
+        </button>
+        <button type="button" onclick="saveAllPrizes()"
+          class="py-2 px-5 rounded-xl bg-gradient-to-r from-amber-600 to-yellow-600 hover:from-amber-500 hover:to-yellow-500 text-white text-xs font-bold shadow-lg cursor-pointer">
+          💾 Save All Prizes
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL 5: How to Play & Google Sites Embed Guide -->
+  <div id="helpModal" class="fixed inset-0 bg-black/75 backdrop-blur-sm hidden items-center justify-center p-4 z-40">
+    <div class="bg-gradient-to-b from-[#3d0a11] to-[#230509] border-2 border-amber-400/70 rounded-2xl max-w-md w-full p-5 sm:p-6 shadow-2xl relative">
+      <button onclick="closeModal('helpModal')" class="absolute top-3 right-3 text-amber-200/70 hover:text-white p-1 cursor-pointer">✕</button>
+      <h3 class="text-xl font-bold text-amber-200 font-serif mb-2">🎄 How to Play & Host</h3>
+      
+      <div class="space-y-3 text-xs sm:text-sm text-amber-100/90 leading-relaxed">
+        <div class="bg-black/35 p-3 rounded-xl border border-amber-400/20">
+          <strong class="text-amber-300 block mb-1">1. Claiming a Bauble (Players):</strong>
+          Click any bauble with <span class="font-mono bg-black/50 px-1.5 py-0.5 rounded text-amber-200">NAME: ?</span>, type your name, and submit! Your name immediately appears on the wooden nameplate.
+        </div>
+        <div class="bg-black/35 p-3 rounded-xl border border-amber-400/20">
+          <strong class="text-amber-300 block mb-1">2. Revealing Weekly Prizes (Host):</strong>
+          Click <strong>Host / Reveal Prizes</strong> and enter PIN <span class="font-mono bg-black/50 px-1.5 py-0.5 rounded text-amber-200">1234</span>. You can customize what prize is behind each bauble and reveal them one-by-one at the end of each week!
+        </div>
+        <div class="bg-black/35 p-3 rounded-xl border border-amber-400/20">
+          <strong class="text-amber-300 block mb-1">3. Adding to Google Sites:</strong>
+          In Google Sites, click <strong>Insert → Embed → Embed code</strong>, paste this HTML code, and stretch the embed box to fit comfortably on your page.
+        </div>
+      </div>
+
+      <button onclick="closeModal('helpModal')"
+        class="mt-4 w-full py-2.5 rounded-xl bg-amber-600 hover:bg-amber-500 text-white text-xs font-bold transition cursor-pointer">
+        Got It!
+      </button>
+    </div>
+  </div>
+
+  <!-- Custom Toast Notification -->
+  <div id="toastBanner" class="fixed bottom-4 left-1/2 -translate-x-1/2 bg-stone-900/95 border border-amber-400 text-amber-100 px-4 py-2.5 rounded-full shadow-2xl text-xs sm:text-sm font-medium z-50 transition-all duration-300 opacity-0 pointer-events-none">
+    Notification
+  </div>
+
+  <!-- Firebase + Application Logic -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+    import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+    import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+    // --- 1. BAUBLE VISUAL DEFINITIONS (Matching Reference Image 1 to 25) ---
+    const BAUBLE_STYLES = [
+      { num: 1,  tex: 'tex-crimson',        decor: 'none' },
+      { num: 2,  tex: 'tex-gold',           decor: 'gold-scroll' },
+      { num: 3,  tex: 'tex-white-gold',     decor: 'gold-snowflakes' },
+      { num: 4,  tex: 'tex-emerald',        decor: 'none' },
+      { num: 5,  tex: 'tex-green-holly',    decor: 'holly-berries' },
+      { num: 6,  tex: 'tex-red-snowflakes', decor: 'white-snowflakes' },
+      { num: 7,  tex: 'tex-green-stars',    decor: 'gold-stars' },
+      { num: 8,  tex: 'tex-tartan',         decor: 'none' },
+      { num: 9,  tex: 'tex-crimson',        decor: 'none' },
+      { num: 10, tex: 'tex-gold',           decor: 'none' },
+      { num: 11, tex: 'tex-white-pearl',    decor: 'none' },
+      { num: 12, tex: 'tex-emerald',        decor: 'none' },
+      { num: 13, tex: 'tex-gold-glitter',   decor: 'none' },
+      { num: 14, tex: 'tex-white-gold',     decor: 'subtle-frost' },
+      { num: 15, tex: 'tex-royal-blue',     decor: 'white-stars' },
+      { num: 16, tex: 'tex-red-snowflakes', decor: 'white-snowflakes' },
+      { num: 17, tex: 'tex-green-stars',    decor: 'gold-stars' },
+      { num: 18, tex: 'tex-gold',           decor: 'none' },
+      { num: 19, tex: 'tex-royal-blue',     decor: 'none' },
+      { num: 20, tex: 'tex-green-holly',    decor: 'holly-berries' },
+      { num: 21, tex: 'tex-white-dots',     decor: 'none' },
+      { num: 22, tex: 'tex-emerald',        decor: 'none' },
+      { num: 23, tex: 'tex-tartan',         decor: 'none' },
+      { num: 24, tex: 'tex-green-glitter',  decor: 'none' },
+      { num: 25, tex: 'tex-white-wreath',   decor: 'botanical-wreath' }
+    ];
+
+    const DEFAULT_PRIZES = [
+      "☕ £10 Coffee Shop Voucher",
+      "🍫 Luxury Belgian Chocolate Box",
+      "⏰ Extra 1-Hour Lunch Break",
+      "🎟️ Cinema Tickets for Two",
+      "🧦 Cozy Festive Socks & Hot Cocoa",
+      "🍕 Free Team Pizza Lunch",
+      "🎁 Mystery Secret Santa Gift",
+      "🧁 Gourmet Bakery Treat Box",
+      "🌟 Half-Day Friday Pass",
+      "🕯️ Spiced Cinnamon Winter Candle",
+      "🎧 £15 Digital Gift Card",
+      "🍪 Homemade Gingerbread Tin",
+      "🏆 Grand Festive Hamper!",
+      "🎲 Board Game Night Bundle",
+      "🍵 Artisanal Tea Selection",
+      "🥂 Bottle of Festive Fizz",
+      "📚 Bestselling Book Voucher",
+      "🍩 Box of Glazed Donuts",
+      "🌿 Desk Succulent & Planter",
+      "🎬 Streaming Service Gift Card",
+      "🧣 Warm Winter Scarf",
+      "🍬 Retro Holiday Sweet Jar",
+      "☕ Mug Warmer & Cocoa Set",
+      "🍰 Festive Yule Log Cake",
+      "✨ £25 Amazon / Store Voucher"
+    ];
+
+    // --- 2. APPLICATION STATE ---
+    let gameState = {
+      pin: "1234",
+      baubles: {}
+    };
+
+    // Initialize default 25 baubles
+    for (let i = 1; i <= 25; i++) {
+      gameState.baubles[i] = {
+        claimedBy: "",
+        note: "",
+        prize: DEFAULT_PRIZES[i - 1],
+        revealed: false
+      };
+    }
+
+    let isHostUnlocked = false;
+    let activeBaubleNum = null;
+    let db = null;
+    let user = null;
+    let boardDocRef = null;
+    const STORAGE_KEY = "claim_a_bauble_festive_state_v1";
+
+    // --- 3. FIREBASE REAL-TIME SYNC WITH GRACEFUL FALLBACK ---
+    async function initStorage() {
+      try {
+        if (typeof __firebase_config !== 'undefined' && __firebase_config) {
+          const firebaseConfig = JSON.parse(__firebase_config);
+          const appId = typeof __app_id !== 'undefined' ? __app_id : 'claim-a-bauble-default';
+          const app = initializeApp(firebaseConfig);
+          const auth = getAuth(app);
+          db = getFirestore(app);
+
+          if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+            const cred = await signInWithCustomToken(auth, __initial_auth_token);
+            user = cred.user;
+          } else {
+            const cred = await signInAnonymously(auth);
+            user = cred.user;
+          }
+
+          // Strict Rule 1 Path: /artifacts/{appId}/public/data/{collectionName}/{docId}
+          boardDocRef = doc(db, 'artifacts', appId, 'public', 'data', 'bauble_games', 'main_board');
+
+          onSnapshot(boardDocRef, (snapshot) => {
+            if (snapshot.exists()) {
+              const data = snapshot.data();
+              if (data && data.baubles) {
+                gameState.pin = data.pin || "1234";
+                for (let i = 1; i <= 25; i++) {
+                  if (data.baubles[i]) {
+                    gameState.baubles[i] = {
+                      ...gameState.baubles[i],
+                      ...data.baubles[i]
+                    };
+                  }
+                }
+                renderBoard();
+              }
+            } else {
+              // Seed initial board in Firestore
+              saveGameState();
+            }
+            updateSyncIndicator(true);
+          }, (error) => {
+            console.warn("Firestore listener error, using local fallback:", error);
+            loadLocalState();
+            updateSyncIndicator(false);
+          });
+        } else {
+          loadLocalState();
+          updateSyncIndicator(false);
+        }
+      } catch (err) {
+        console.warn("Firebase unavailable in standalone environment, using local storage:", err);
+        loadLocalState();
+        updateSyncIndicator(false);
+      }
+    }
+
+    function loadLocalState() {
+      try {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          if (parsed && parsed.baubles) {
+            gameState = parsed;
+          }
+        }
+      } catch (e) {
+        // Ignore storage errors in sandboxed iframes
+      }
+      renderBoard();
+    }
+
+    async function saveGameState() {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(gameState));
+      } catch (e) {}
+
+      if (db && user && boardDocRef) {
+        try {
+          await setDoc(boardDocRef, gameState, { merge: true });
+        } catch (err) {
+          console.error("Failed to sync state to cloud:", err);
+        }
+      }
+    }
+
+    function updateSyncIndicator(isCloud) {
+      const dot = document.getElementById('syncDot');
+      const label = document.getElementById('syncLabel');
+      if (isCloud) {
+        dot.className = "w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse";
+        label.textContent = "Live Multiplayer Sync";
+      } else {
+        dot.className = "w-2.5 h-2.5 rounded-full bg-amber-400";
+        label.textContent = "Interactive Board";
+      }
+    }
+
+    // --- 4. SVG DECORATIVE OVERLAYS FOR BAUBLES ---
+    function getBaubleDecorSVG(decorType) {
+      switch (decorType) {
+        case 'gold-snowflakes':
+          return `<svg class="absolute inset-0 w-full h-full pointer-events-none opacity-80" viewBox="0 0 100 100">
+            <text x="20" y="34" fill="#ca8a04" font-size="14">❄</text>
+            <text x="72" y="36" fill="#ca8a04" font-size="12">❄</text>
+            <text x="24" y="76" fill="#ca8a04" font-size="13">❄</text>
+            <text x="68" y="78" fill="#ca8a04" font-size="15">❄</text>
+          </svg>`;
+        case 'white-snowflakes':
+          return `<svg class="absolute inset-0 w-full h-full pointer-events-none opacity-85" viewBox="0 0 100 100">
+            <text x="16" y="35" fill="#ffffff" font-size="14">❄</text>
+            <text x="72" y="35" fill="#ffffff" font-size="13">❄</text>
+            <text x="20" y="78" fill="#ffffff" font-size="14">❄</text>
+            <text x="70" y="77" fill="#ffffff" font-size="13">❄</text>
+            <circle cx="50" cy="18" r="1.5" fill="#fff"/>
+            <circle cx="50" cy="84" r="1.5" fill="#fff"/>
+          </svg>`;
+        case 'gold-stars':
+          return `<svg class="absolute inset-0 w-full h-full pointer-events-none opacity-90" viewBox="0 0 100 100">
+            <text x="22" y="34" fill="#fde047" font-size="12">★</text>
+            <text x="70" y="32" fill="#fde047" font-size="10">★</text>
+            <text x="18" y="72" fill="#fde047" font-size="11">★</text>
+            <text x="72" y="76" fill="#fde047" font-size="12">★</text>
+            <text x="48" y="20" fill="#fef08a" font-size="9">✦</text>
+          </svg>`;
+        case 'white-stars':
+          return `<svg class="absolute inset-0 w-full h-full pointer-events-none opacity-85" viewBox="0 0 100 100">
+            <text x="22" y="34" fill="#ffffff" font-size="11">★</text>
+            <text x="71" y="35" fill="#ffffff" font-size="10">✦</text>
+            <text x="21" y="76" fill="#ffffff" font-size="10">✦</text>
+            <text x="70" y="75" fill="#ffffff" font-size="11">★</text>
+          </svg>`;
+        case 'holly-berries':
+          return `<svg class="absolute inset-0 w-full h-full pointer-events-none opacity-85" viewBox="0 0 100 100">
+            <path d="M18,28 Q28,18 36,28 Q26,34 18,28 Z" fill="#4ade80"/>
+            <path d="M82,28 Q72,18 64,28 Q74,34 82,28 Z" fill="#4ade80"/>
+            <circle cx="28" cy="24" r="2.5" fill="#ef4444"/>
+            <circle cx="72" cy="24" r="2.5" fill="#ef4444"/>
+            <path d="M22,74 Q32,82 40,72 Q30,68 22,74 Z" fill="#4ade80"/>
+            <circle cx="74" cy="72" r="2.5" fill="#ef4444"/>
+          </svg>`;
+        case 'botanical-wreath':
+          return `<svg class="absolute inset-0 w-full h-full pointer-events-none opacity-85" viewBox="0 0 100 100">
+            <circle cx="50" cy="50" r="37" fill="none" stroke="#15803d" stroke-width="3.5" stroke-dasharray="6,5"/>
+            <circle cx="50" cy="13" r="2.5" fill="#dc2626"/>
+            <circle cx="87" cy="50" r="2.5" fill="#dc2626"/>
+            <circle cx="50" cy="87" r="2.5" fill="#dc2626"/>
+            <circle cx="13" cy="50" r="2.5" fill="#dc2626"/>
+          </svg>`;
+        case 'gold-scroll':
+          return `<svg class="absolute inset-0 w-full h-full pointer-events-none opacity-55" viewBox="0 0 100 100">
+            <path d="M15,35 Q30,20 50,35 T85,35" fill="none" stroke="#78350f" stroke-width="2"/>
+            <path d="M15,70 Q30,85 50,70 T85,70" fill="none" stroke="#78350f" stroke-width="2"/>
+          </svg>`;
+        default:
+          return '';
+      }
+    }
+
+    // Build single bauble visual element (used in Grid & Modals)
+    function createBaubleVisualHTML(num, sizeClasses = "w-12 h-12 sm:w-16 sm:h-16 md:w-20 md:h-20", fontClasses = "text-xl sm:text-2xl md:text-3xl", showRibbon = true) {
+      const styleDef = BAUBLE_STYLES[num - 1];
+      const state = gameState.baubles[num];
+      const decorSVG = getBaubleDecorSVG(styleDef.decor);
+
+      return `
+        <div class="flex flex-col items-center relative">
+          ${showRibbon ? `
+            <!-- Red Hanging Ribbon -->
+            <div class="w-3 sm:w-4 h-3.5 sm:h-5 flex justify-between overflow-hidden -mb-0.5">
+              <div class="w-1 sm:w-1.5 h-full bg-gradient-to-b from-red-800 to-red-600 -rotate-12 origin-bottom"></div>
+              <div class="w-1 sm:w-1.5 h-full bg-gradient-to-b from-red-800 to-red-600 rotate-12 origin-bottom"></div>
+            </div>
+          ` : ''}
+          <!-- Metallic Gold Cap -->
+          <div class="w-3.5 sm:w-4.5 h-2 sm:h-2.5 rounded-t-sm bg-gradient-to-r from-yellow-700 via-amber-300 to-yellow-700 border border-yellow-900/60 shadow-sm z-10 -mb-0.5"></div>
+          <!-- Ornament Sphere -->
+          <div class="bauble-sphere ${styleDef.tex} ${sizeClasses}">
+            ${decorSVG}
+            <span class="bauble-number ${fontClasses}">${num}</span>
+            ${state.revealed ? `
+              <div class="absolute inset-0 bg-amber-950/80 backdrop-blur-[1px] flex flex-col items-center justify-center p-1 text-center z-10">
+                <span class="text-[9px] sm:text-[10px] uppercase tracking-wider text-amber-300 font-bold">Prize!</span>
+                <span class="text-[10px] sm:text-xs font-bold text-white leading-tight line-clamp-2">${escapeHTML(state.prize)}</span>
+              </div>
+            ` : ''}
+          </div>
+        </div>
+      `;
+    }
+
+    // --- 5. RENDER THE 5x5 GRID ---
+    function renderBoard() {
+      const grid = document.getElementById('baubleGrid');
+      grid.innerHTML = '';
+
+      let claimedCount = 0;
+
+      for (let i = 1; i <= 25; i++) {
+        const bState = gameState.baubles[i];
+        const isClaimed = Boolean(bState.claimedBy && bState.claimedBy.trim() !== "");
+        if (isClaimed) claimedCount++;
+
+        const slot = document.createElement('button');
+        slot.type = 'button';
+        slot.onclick = () => handleBaubleClick(i);
+        slot.className = `bauble-slot group flex flex-col items-center focus:outline-none cursor-pointer ${isClaimed ? 'bauble-claimed' : ''} ${bState.revealed ? 'bauble-revealed' : ''}`;
+        slot.setAttribute('aria-label', isClaimed ? `Bauble ${i}, claimed by ${bState.claimedBy}` : `Bauble ${i}, unclaimed`);
+
+        // Stagger sway animation slightly so baubles move naturally
+        const swayDelay = ((i * 0.37) % 3).toFixed(2);
+
+        const displayName = isClaimed ? escapeHTML(bState.claimedBy) : '?';
+        const plaqueTextColor = isClaimed ? 'text-amber-200 font-bold' : 'text-amber-100/90';
+
+        slot.innerHTML = `
+          <div class="bauble-sway" style="animation-delay: ${swayDelay}s;">
+            ${createBaubleVisualHTML(i)}
+          </div>
+          <!-- Rustic Wooden Nameplate -->
+          <div class="wood-plaque w-full max-w-[116px] mt-1 sm:mt-1.5 px-1 sm:px-2 py-0.5 sm:py-1 rounded flex items-center justify-center gap-1 overflow-hidden">
+            <span class="text-[8px] sm:text-[10px] tracking-tight text-amber-300/90 font-bold shrink-0">NAME:</span>
+            <span class="text-[9px] sm:text-[11px] ${plaqueTextColor} truncate">${displayName}</span>
+          </div>
+        `;
+
+        grid.appendChild(slot);
+      }
+
+      document.getElementById('claimedCounter').textContent = `${claimedCount} / 25 Claimed`;
+    }
+
+    // --- 6. INTERACTION HANDLERS ---
+    window.handleBaubleClick = function(num) {
+      activeBaubleNum = num;
+      const bState = gameState.baubles[num];
+      const isClaimed = Boolean(bState.claimedBy && bState.claimedBy.trim() !== "");
+
+      if (!isClaimed && !bState.revealed && !isHostUnlocked) {
+        // Open Claim Modal for available bauble
+        document.getElementById('claimBaubleNum').textContent = num;
+        document.getElementById('claimPreviewContainer').innerHTML = createBaubleVisualHTML(num, "w-20 h-20", "text-3xl", false);
+        document.getElementById('playerNameInput').value = "";
+        document.getElementById('playerNoteInput').value = "";
+        openModal('claimModal');
+        setTimeout(() => document.getElementById('playerNameInput').focus(), 100);
+      } else {
+        // Open Details / Reveal Modal (or Host Management for unclaimed bauble)
+        openBaubleDetailModal(num);
+      }
+    };
+
+    window.submitClaim = async function(e) {
+      e.preventDefault();
+      if (!activeBaubleNum) return;
+
+      const nameVal = document.getElementById('playerNameInput').value.trim();
+      const noteVal = document.getElementById('playerNoteInput').value.trim();
+
+      if (!nameVal) return;
+
+      // Double check if already claimed
+      if (gameState.baubles[activeBaubleNum].claimedBy) {
+        showToast("Oops! Someone just claimed that bauble.");
+        closeModal('claimModal');
+        renderBoard();
+        return;
+      }
+
+      gameState.baubles[activeBaubleNum].claimedBy = nameVal;
+      gameState.baubles[activeBaubleNum].note = noteVal;
+
+      closeModal('claimModal');
+      renderBoard();
+      launchConfetti(45);
+      showToast(`🎄 Bauble #${activeBaubleNum} claimed by ${nameVal}!`);
+      await saveGameState();
+    };
+
+    function openBaubleDetailModal(num) {
+      const bState = gameState.baubles[num];
+      const isClaimed = Boolean(bState.claimedBy && bState.claimedBy.trim() !== "");
+
+      document.getElementById('detailBaubleNum').textContent = num;
+      document.getElementById('detailPreviewContainer').innerHTML = createBaubleVisualHTML(num, "w-20 h-20", "text-3xl", false);
+
+      document.getElementById('detailClaimantName').textContent = isClaimed ? bState.claimedBy : "Unclaimed (Available)";
+      document.getElementById('detailClaimantNote').textContent = bState.note ? `Note: ${bState.note}` : "";
+
+      const prizeBox = document.getElementById('prizeRevealBox');
+      if (bState.revealed) {
+        prizeBox.className = "rounded-xl p-4 my-3 border-2 border-amber-300 bg-gradient-to-r from-amber-600/30 via-yellow-500/30 to-amber-600/30 shadow-lg";
+        prizeBox.innerHTML = `
+          <div class="text-xs uppercase tracking-widest text-amber-300 font-bold mb-1">🎉 Revealed Prize 🎉</div>
+          <div class="text-lg sm:text-xl font-extrabold text-white">${escapeHTML(bState.prize)}</div>
+        `;
+      } else {
+        prizeBox.className = "rounded-xl p-4 my-3 border border-white/15 bg-black/40";
+        prizeBox.innerHTML = `
+          <div class="text-2xl mb-1">🎁</div>
+          <div class="text-xs font-semibold text-amber-200">Mystery Prize Hidden!</div>
+          <div class="text-[11px] text-amber-100/70 mt-0.5">To be revealed by the host at the end of the week.</div>
+          ${isHostUnlocked ? `<div class="mt-2 pt-2 border-t border-white/10 text-xs text-emerald-300">Host Preview: <strong>${escapeHTML(bState.prize)}</strong></div>` : ''}
+        `;
+      }
+
+      // Host controls inside detail modal
+      const hostActions = document.getElementById('detailHostActions');
+      if (isHostUnlocked) {
+        hostActions.classList.remove('hidden');
+        const revealBtn = document.getElementById('toggleRevealSingleBtn');
+        revealBtn.textContent = bState.revealed ? "Hide Prize Again" : "✨ Reveal Prize Now";
+        
+        const clearBtn = document.getElementById('clearClaimSingleBtn');
+        clearBtn.style.display = isClaimed ? 'inline-block' : 'none';
+      } else {
+        hostActions.classList.add('hidden');
+      }
+
+      openModal('detailModal');
+    }
+
+    // --- 7. HOST MODE & PRIZE REVEAL CONTROLS ---
+    window.openHostModal = function() {
+      if (isHostUnlocked) {
+        openPrizeEditorModal();
+      } else {
+        document.getElementById('hostPinInput').value = "";
+        document.getElementById('pinErrorMsg').classList.add('hidden');
+        openModal('hostLoginModal');
+        setTimeout(() => document.getElementById('hostPinInput').focus(), 100);
+      }
+    };
+
+    window.verifyHostPin = function(e) {
+      e.preventDefault();
+      const entered = document.getElementById('hostPinInput').value.trim();
+      if (entered === gameState.pin) {
+        isHostUnlocked = true;
+        closeModal('hostLoginModal');
+        document.getElementById('hostQuickPanel').classList.remove('hidden');
+        document.getElementById('hostBtnText').textContent = "Manage & Reveal Prizes";
+        showToast("🔓 Host Mode Unlocked!");
+      } else {
+        document.getElementById('pinErrorMsg').classList.remove('hidden');
+      }
+    };
+
+    window.lockHostMode = function() {
+      isHostUnlocked = false;
+      document.getElementById('hostQuickPanel').classList.add('hidden');
+      document.getElementById('hostBtnText').textContent = "Host / Reveal Prizes";
+      showToast("🔒 Host Mode Locked");
+    };
+
+    window.toggleRevealSingle = async function() {
+      if (!isHostUnlocked || !activeBaubleNum) return;
+      const bState = gameState.baubles[activeBaubleNum];
+      bState.revealed = !bState.revealed;
+      
+      renderBoard();
+      openBaubleDetailModal(activeBaubleNum);
+      if (bState.revealed) {
+        launchConfetti(80);
+        showToast(`🎉 Revealed Prize for Bauble #${activeBaubleNum}!`);
+      }
+      await saveGameState();
+    };
+
+    window.clearSingleClaim = async function() {
+      if (!isHostUnlocked || !activeBaubleNum) return;
+      gameState.baubles[activeBaubleNum].claimedBy = "";
+      gameState.baubles[activeBaubleNum].note = "";
+      renderBoard();
+      closeModal('detailModal');
+      showToast(`Cleared claim on Bauble #${activeBaubleNum}`);
+      await saveGameState();
+    };
+
+    window.revealAllBaubles = async function() {
+      if (!isHostUnlocked) return;
+      for (let i = 1; i <= 25; i++) {
+        gameState.baubles[i].revealed = true;
+      }
+      renderBoard();
+      launchConfetti(120);
+      showToast("🎊 All 25 Prizes Revealed!");
+      await saveGameState();
+    };
+
+    window.confirmResetBoard = async function() {
+      if (!isHostUnlocked) return;
+      // Two-step button confirmation without browser confirm()
+      const btn = event.target;
+      if (btn.dataset.confirming !== "true") {
+        btn.dataset.confirming = "true";
+        const orig = btn.textContent;
+        btn.textContent = "Click Again to Confirm";
+        btn.classList.add("ring-2", "ring-white");
+        setTimeout(() => {
+          btn.dataset.confirming = "false";
+          btn.textContent = orig;
+          btn.classList.remove("ring-2", "ring-white");
+        }, 3500);
+        return;
+      }
+
+      for (let i = 1; i <= 25; i++) {
+        gameState.baubles[i].claimedBy = "";
+        gameState.baubles[i].note = "";
+        gameState.baubles[i].revealed = false;
+      }
+      btn.dataset.confirming = "false";
+      btn.textContent = "Reset Claims";
+      renderBoard();
+      showToast("🔄 Board claims and reveals have been reset!");
+      await saveGameState();
+    };
+
+    // --- 8. BULK PRIZE EDITOR MODAL ---
+    window.openPrizeEditorModal = function() {
+      const list = document.getElementById('prizeEditorList');
+      list.innerHTML = '';
+      document.getElementById('newHostPinInput').value = gameState.pin;
+
+      for (let i = 1; i <= 25; i++) {
+        const bState = gameState.baubles[i];
+        const claimantTag = bState.claimedBy ? `<span class="text-amber-300 font-semibold">(${escapeHTML(bState.claimedBy)})</span>` : `<span class="text-white/40">(Unclaimed)</span>`;
+
+        const row = document.createElement('div');
+        row.className = "flex flex-col sm:flex-row sm:items-center gap-2 bg-black/40 p-2.5 rounded-xl border border-amber-400/20";
+        row.innerHTML = `
+          <div class="flex items-center justify-between sm:w-44 shrink-0">
+            <span class="text-xs font-bold text-amber-200">#${i} ${claimantTag}</span>
+          </div>
+          <input type="text" id="prizeInput_${i}" value="${escapeHTML(bState.prize)}" placeholder="Enter prize..."
+            class="flex-1 px-2.5 py-1.5 rounded-lg bg-black/60 border border-amber-400/30 text-white text-xs focus:outline-none focus:border-amber-300">
+          <label class="flex items-center gap-1.5 text-xs text-amber-100 cursor-pointer shrink-0 select-none">
+            <input type="checkbox" id="revealCheck_${i}" ${bState.revealed ? 'checked' : ''} class="accent-amber-500 w-4 h-4 rounded">
+            <span>Revealed</span>
+          </label>
+        `;
+        list.appendChild(row);
+      }
+
+      openModal('prizeEditorModal');
+    };
+
+    window.randomizeDefaultPrizes = function() {
+      const shuffled = [...DEFAULT_PRIZES].sort(() => Math.random() - 0.5);
+      for (let i = 1; i <= 25; i++) {
+        const input = document.getElementById(`prizeInput_${i}`);
+        if (input) input.value = shuffled[i - 1];
+      }
+      showToast("🎲 Shuffled festive prizes into the list!");
+    };
+
+    window.saveAllPrizes = async function() {
+      const newPin = document.getElementById('newHostPinInput').value.trim();
+      if (newPin.length >= 3) {
+        gameState.pin = newPin;
+      }
+
+      let newlyRevealed = false;
+      for (let i = 1; i <= 25; i++) {
+        const prizeVal = document.getElementById(`prizeInput_${i}`).value.trim();
+        const revVal = document.getElementById(`revealCheck_${i}`).checked;
+        if (revVal && !gameState.baubles[i].revealed) newlyRevealed = true;
+
+        gameState.baubles[i].prize = prizeVal || "🎁 Mystery Festive Prize";
+        gameState.baubles[i].revealed = revVal;
+      }
+
+      closeModal('prizeEditorModal');
+      renderBoard();
+      if (newlyRevealed) launchConfetti(90);
+      showToast("💾 All prizes & reveal settings saved!");
+      await saveGameState();
+    };
+
+    // --- 9. UTILITIES (MODALS, TOASTS, CONFETTI) ---
+    window.openModal = function(id) {
+      const el = document.getElementById(id);
+      el.classList.remove('hidden');
+      el.classList.add('flex');
+    };
+
+    window.closeModal = function(id) {
+      const el = document.getElementById(id);
+      el.classList.add('hidden');
+      el.classList.remove('flex');
+    };
+
+    window.openHelpModal = function() {
+      openModal('helpModal');
+    };
+
+    let toastTimeout = null;
+    function showToast(msg) {
+      const toast = document.getElementById('toastBanner');
+      toast.textContent = msg;
+      toast.classList.remove('opacity-0');
+      toast.classList.add('opacity-100');
+      clearTimeout(toastTimeout);
+      toastTimeout = setTimeout(() => {
+        toast.classList.remove('opacity-100');
+        toast.classList.add('opacity-0');
+      }, 3200);
+    }
+
+    function escapeHTML(str) {
+      if (!str) return "";
+      return str.replace(/[&<>"']/g, function(m) {
+        return ({
+          '&': '&amp;',
+          '<': '&lt;',
+          '>': '&gt;',
+          '"': '&quot;',
+          "'": '&#39;'
+        })[m];
+      });
+    }
+
+    // Festive Gold & Red Confetti Celebration
+    function launchConfetti(count = 60) {
+      const canvas = document.getElementById('confettiCanvas');
+      const ctx = canvas.getContext('2d');
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+
+      const colors = ['#fde047', '#ef4444', '#22c55e', '#ffffff', '#f59e0b'];
+      const particles = Array.from({ length: count }, () => ({
+        x: Math.random() * canvas.width,
+        y: -20 - Math.random() * 120,
+        w: 6 + Math.random() * 6,
+        h: 4 + Math.random() * 5,
+        color: colors[Math.floor(Math.random() * colors.length)],
+        vy: 2.5 + Math.random() * 4,
+        vx: (Math.random() - 0.5) * 3,
+        rot: Math.random() * 360,
+        vRot: (Math.random() - 0.5) * 10
+      }));
+
+      let frame = 0;
+      function animateConfetti() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        let active = false;
+        particles.forEach(p => {
+          p.x += p.vx;
+          p.y += p.vy;
+          p.rot += p.vRot;
+          if (p.y < canvas.height + 20) active = true;
+
+          ctx.save();
+          ctx.translate(p.x, p.y);
+          ctx.rotate((p.rot * Math.PI) / 180);
+          ctx.fillStyle = p.color;
+          ctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
+          ctx.restore();
+        });
+
+        frame++;
+        if (active && frame < 180) {
+          requestAnimationFrame(animateConfetti);
+        } else {
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
+      }
+      animateConfetti();
+    }
+
+    // Boot Application
+    window.addEventListener('DOMContentLoaded', () => {
+      renderBoard();
+      initStorage();
+    });
+  </script>
+</body>
+</html>
